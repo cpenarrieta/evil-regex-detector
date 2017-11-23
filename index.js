@@ -18,12 +18,12 @@ const randexp = require('./wrong-string-regex').randexp
 
 const incorrectStrings = Array.from({ length: iterations }).map((e, k) => randexp(regex))
 
-incorrectStrings.forEach(s => {
-  console.log(`evaluating: ${chalk.yellow(s)}`)
+incorrectStrings.forEach(item => {
+  console.log(`evaluating: ${chalk.yellow(item)}`)
   tripwire.resetTripwire(timeoutEvilRegex)
-  console.time(chalk.green(s))
-  regex.test(s)
-  console.timeEnd(chalk.green(s))
+  console.time(chalk.green(item))
+  regex.test(item)
+  console.timeEnd(chalk.green(item))
 })
 
 console.log('')
