@@ -1,6 +1,6 @@
 /**
  * Code taken from https://github.com/fent/randexp.js
- * Slighly modified to generate an incorrect string
+ * Slighly modified to generate an incorrect output string
  */
 
 var ret = require('ret');
@@ -10,6 +10,8 @@ var types = ret.types;
 function getRandom(min, max) {
   return Math.random() * (max - min) + min;
 }
+
+const singleCharToken = () => ({ "type": ret.types.CHAR, "value": getRandom(34, 10000) })
 
 /**
  * If code is alphabetic, converts to other case.
@@ -23,7 +25,6 @@ function toOtherCase(code) {
     65 <= code && code <= 90  ?  32 : 0);
 }
 
-
 /**
  * Randomly returns a true or false value.
  *
@@ -32,7 +33,6 @@ function toOtherCase(code) {
 function randBool() {
   return !this.randInt(0, 1);
 }
-
 
 /**
  * Randomly selects and returns a value from the array.
@@ -46,7 +46,6 @@ function randSelect(arr) {
   }
   return arr[this.randInt(0, arr.length - 1)];
 }
-
 
 /**
  * expands a token to a DiscontinuousRange of characters which has a
@@ -83,7 +82,6 @@ function expand(token) {
   }
 }
 
-
 /**
  * Checks if some custom properties have been set for this regexp.
  *
@@ -91,6 +89,7 @@ function expand(token) {
  * @param {RegExp} regexp
  */
 function checkCustom(randexp, regexp) {
+  regexp.max
   if (typeof regexp.max === 'number') {
     randexp.max = regexp.max;
   }
@@ -101,7 +100,6 @@ function checkCustom(randexp, regexp) {
     randexp.randInt = regexp.randInt;
   }
 }
-
 
 /**
  * @constructor
@@ -124,22 +122,23 @@ var RandExp = module.exports = function(regexp, m) {
   }
 
   this.tokens = ret(regexp);
-  this.tokens.stack.splice(this.tokens.stack.length - 1, 1, { "type": ret.types.CHAR, "value": getRandom(34, 10000) })
 };
-
-
 
 // When a repetitional token has its max set to Infinite,
 // randexp won't actually generate a random amount between min and Infinite
 // instead it will see Infinite as min + 100.
-RandExp.prototype.max = 10;
+RandExp.prototype.max = 0;
 
+RandExp.prototype.mutateRegex = function() {
+  this.max = this.max + 10
+  this.tokens.stack.splice(this.tokens.stack.length - 1, 1, singleCharToken())
+}
 
 // Generates the random string.
 RandExp.prototype.gen = function() {
+  this.mutateRegex()
   return gen.call(this, this.tokens, []);
 };
-
 
 // Enables use of randexp with a shorter call.
 RandExp.randexp = function(regexp, m) {
@@ -155,7 +154,6 @@ RandExp.randexp = function(regexp, m) {
   return randexp.gen();
 };
 
-
 // This enables sugary /regexp/.gen syntax.
 RandExp.sugar = function() {
   /* jshint freeze:false */
@@ -168,7 +166,6 @@ RandExp.sugar = function() {
 // for instance: RandExp.defaultRange.add(0, 65535);
 RandExp.prototype.defaultRange = new DRange(32, 126);
 
-
 /**
  * Randomly generates and returns a number between a and b (inclusive).
  *
@@ -179,7 +176,6 @@ RandExp.prototype.defaultRange = new DRange(32, 126);
 RandExp.prototype.randInt = function(a, b) {
   return a + Math.floor(Math.random() * (1 + b - a));
 };
-
 
 /**
  * Generate random string modeled after given tokens.
@@ -192,8 +188,6 @@ function gen(token, groups) {
   var stack, str, n, i, l;
 
   switch (token.type) {
-
-
     case types.ROOT:
     case types.GROUP:
       // Ignore lookaheads for now.
@@ -217,17 +211,14 @@ function gen(token, groups) {
       }
       return str;
 
-
     case types.POSITION:
       // Do nothing for now.
       return '';
-
 
     case types.SET:
       var expandedSet = expand.call(this, token);
       if (!expandedSet.length) { return ''; }
       return String.fromCharCode(randSelect.call(this, expandedSet));
-
 
     case types.REPETITION:
       // Randomly generate number between min and max.
@@ -241,10 +232,8 @@ function gen(token, groups) {
 
       return str;
 
-
     case types.REFERENCE:
       return groups[token.value - 1] || '';
-
 
     case types.CHAR:
       var code = this.ignoreCase && randBool.call(this) ?
@@ -252,5 +241,3 @@ function gen(token, groups) {
       return String.fromCharCode(code);
   }
 }
-
-
