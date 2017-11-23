@@ -1,0 +1,23 @@
+{
+  "name": "evil-regex-detector",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cpenarrieta/evil-regex-detector.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cpenarrieta/evil-regex-detector/issues"
+  },
+  "homepage": "https://github.com/cpenarrieta/evil-regex-detector#readme",
+  "dependencies": {
+    "discontinuous-range": "^1.0.0",
+    "ret": "^0.2.1"
+  }
+}
