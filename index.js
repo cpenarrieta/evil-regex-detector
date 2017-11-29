@@ -5,12 +5,18 @@ var chalk = require('chalk')
 // const regex = /^([a-zA-Z0-9])(([\-.]|[_]+)?([a-zA-Z0-9]+))*(@){1}[a-z0-9]+[.]{1}(([a-z]{2,3})|([a-z]{2,3}[.]{1}[a-z]{2,3}))$/ //evil
 // var regex = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/ // not evil
 const regex = /A(B|C+)+D/ //evil
+// const regex = /(\d+)milli(?:second)?[s]?/i
+// const regex = /Dell.*Streak|Dell.*Aero|Dell.*Venue|DELL.*Venue Pro|Dell Flash|Dell Smoke|Dell Mini 3iX|XCD28|XCD35|\b001DL\b|\b101DL\b|\bGS01\b/i
 
 const iterations = 10
 const timeoutEvilRegex = 1500
 
 process.on('uncaughtException', function (e) {
-  console.log(`Took more than ${timeoutEvilRegex}ms. ${chalk.red('This is most likely an evil regular expression')}`)
+  if (e.message === 'Blocked event loop') {
+    console.log(`Took more than ${timeoutEvilRegex}ms. ${chalk.red('This is most likely an evil regular expression')}`)
+  } else {
+    console.log(e)
+  }
   process.exit(1)
 })
 

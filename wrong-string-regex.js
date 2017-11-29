@@ -131,7 +131,11 @@ RandExp.prototype.max = 0;
 
 RandExp.prototype.mutateRegex = function() {
   this.max = this.max + 10
-  this.tokens.stack.splice(this.tokens.stack.length - 1, 1, singleCharToken())
+  if (this.tokens.stack) {
+    this.tokens.stack.splice(this.tokens.stack.length - 1, 1, singleCharToken())
+  } else {
+    this.tokens.options.splice(this.tokens.options.length - 1, 1, [singleCharToken()])
+  }
 }
 
 // Generates the random string.
