@@ -32,7 +32,6 @@ const randexp = require('./wrong-string-regex')
 let str = randexp.randexp(regex, 5, true)
 while (regex.test(str)) {
   randexp.mutatePosition++
-  console.log(randexp.mutatePosition)
   str = randexp.randexp(regex, 5, true)
 }
 
