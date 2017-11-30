@@ -127,25 +127,30 @@ var RandExp = module.exports = function(regexp, m) {
 // When a repetitional token has its max set to Infinite,
 // randexp won't actually generate a random amount between min and Infinite
 // instead it will see Infinite as min + 100.
-RandExp.prototype.max = 0;
+RandExp.prototype.max = 5;
+RandExp.mutatePosition = 1;
 
 RandExp.prototype.mutateRegex = function() {
-  this.max = this.max + 10
+  this.max = this.max * 2
   if (this.tokens.stack) {
-    this.tokens.stack.splice(this.tokens.stack.length - 1, 1, singleCharToken())
+    this.tokens.stack.splice(this.tokens.stack.length - RandExp.mutatePosition, 1, singleCharToken())
   } else {
-    this.tokens.options.splice(this.tokens.options.length - 1, 1, [singleCharToken()])
+    this.tokens.options.splice(this.tokens.options.length - RandExp.mutatePosition, 1, [singleCharToken()])
   }
 }
 
 // Generates the random string.
-RandExp.prototype.gen = function() {
+RandExp.prototype.gen = function(resetMax) {
+  if (resetMax) {
+    this.max = 5;
+  }
   this.mutateRegex()
   return gen.call(this, this.tokens, []);
 };
 
+
 // Enables use of randexp with a shorter call.
-RandExp.randexp = function(regexp, m) {
+RandExp.randexp = function(regexp, m, resetMax) {
   var randexp;
   if (regexp._randexp === undefined) {
     randexp = new RandExp(regexp, m);
@@ -155,7 +160,7 @@ RandExp.randexp = function(regexp, m) {
   }
 
   checkCustom(randexp, regexp);
-  return randexp.gen();
+  return randexp.gen(resetMax);
 };
 
 // This enables sugary /regexp/.gen syntax.
