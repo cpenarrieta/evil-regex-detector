@@ -1,7 +1,9 @@
 var tripwire = require('tripwire')
 var chalk = require('chalk')
 
-const regex = /A(B|C+)+D/ 
+var regex = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/
+
+// const regex = /A(B|C+)+D/ 
 // const regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 // const regex = /^([a-zA-Z0-9])(([\-.]|[_]+)?([a-zA-Z0-9]+))*(@){1}[a-z0-9]+[.]{1}(([a-z]{2,3})|([a-z]{2,3}[.]{1}[a-z]{2,3}))$/
 // const regex = /(\w+\d+)+C/
@@ -17,6 +19,7 @@ const timeoutEvilRegex = 1500
 let longestStringLen = 0
 let longestTime = 0
 
+
 process.on('uncaughtException', function (e) {
   if (e.message === 'Blocked event loop') {
     console.log(`Took more than ${timeoutEvilRegex}ms. ${chalk.red('This is most likely an evil regular expression')}`)
@@ -25,6 +28,9 @@ process.on('uncaughtException', function (e) {
   }
   process.exit(1)
 })
+
+console.log(`regex to test: ${chalk.blue(regex)}`)
+console.log('')
 
 const randexp = require('./wrong-string-regex')
 
@@ -35,18 +41,18 @@ while (regex.test(str)) {
   str = randexp.randexp(regex, 5, true)
 }
 
-Array.from({ length: iterations }).forEach(n => {
+Array.from({ length: iterations }, (n, i) => {
   const item = randexp.randexp(regex)
   if (item.length > longestStringLen) longestStringLen = item.length
 
-  console.log(`evaluating: ${chalk.yellow(item)}`)
+  console.log(`evaluating ${chalk.green(`regex #${i + 1}`)}: ${chalk.yellow(item)}`)
   tripwire.resetTripwire(timeoutEvilRegex)
-  console.time(chalk.green(item))
+  console.time(chalk.green(`regex #${i + 1}`))
   regex.test(item)
-  console.timeEnd(chalk.green(item))
+  console.timeEnd(chalk.green(`regex #${i + 1}`))
+  console.log('')
 })
 
-console.log('')
 console.log(chalk.green('-----  Your regex is fine -----'))
 console.log(`Longest length of string evaluated: ${longestStringLen}`)
 
