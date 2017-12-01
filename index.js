@@ -1,7 +1,7 @@
 var tripwire = require('tripwire')
 var chalk = require('chalk')
 
-var regex = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/
+// var regex = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/
 
 // const regex = /A(B|C+)+D/ 
 // const regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -13,6 +13,8 @@ var regex = /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/
 // const regex = /D[oD]?(\[[^\[\]]*\]|\s+)+MMMM?/
 // const regex = /^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/
 // const regex = /(([\w#:.~>+()\s-]+|[.?])+)\s(,|$)/
+
+const regex = /^[\w-]+(?:\.[\w-]+)*@(?:[\w-]+\.)+[a-zA-Z]{2,7}$/
 
 const iterations = 10
 const timeoutEvilRegex = 1500
@@ -45,11 +47,11 @@ Array.from({ length: iterations }, (n, i) => {
   const item = randexp.randexp(regex)
   if (item.length > longestStringLen) longestStringLen = item.length
 
-  console.log(`evaluating ${chalk.green(`regex #${i + 1}`)}: ${chalk.yellow(item)}`)
+  console.log(`evaluating ${chalk.green(`string #${i + 1}`)}: ${chalk.yellow(item)}`)
   tripwire.resetTripwire(timeoutEvilRegex)
-  console.time(chalk.green(`regex #${i + 1}`))
+  console.time(`${chalk.green(`string #${i + 1}`)} | ${chalk.cyan(`string length ${item.length}`)}`)
   regex.test(item)
-  console.timeEnd(chalk.green(`regex #${i + 1}`))
+  console.timeEnd(`${chalk.green(`string #${i + 1}`)} | ${chalk.cyan(`string length ${item.length}`)}`)
   console.log('')
 })
 
