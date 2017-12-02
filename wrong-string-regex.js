@@ -8,7 +8,8 @@ var DRange = require('discontinuous-range');
 var types = ret.types;
 
 function getRandom(min, max) {
-  return Math.random() * (max - min) + min;
+  const x = Math.random() * (max - min) + min - 0.000000001
+  return Math.floor(x);
 }
 
 const singleCharToken = () => ({ "type": ret.types.CHAR, "value": getRandom(34, 10000) })
@@ -113,7 +114,6 @@ var RandExp = module.exports = function(regexp, m) {
     this.multiline = regexp.multiline;
     checkCustom(this, regexp);
     regexp = regexp.source;
-
   } else if (typeof regexp === 'string') {
     this.ignoreCase = m && m.indexOf('i') !== -1;
     this.multiline = m && m.indexOf('m') !== -1;
@@ -121,36 +121,100 @@ var RandExp = module.exports = function(regexp, m) {
     throw new Error('Expected a regexp or string');
   }
 
+  RandExp.regexStr = regexp
   this.tokens = ret(regexp);
 };
 
 // When a repetitional token has its max set to Infinite,
 // randexp won't actually generate a random amount between min and Infinite
 // instead it will see Infinite as min + 100.
-RandExp.prototype.max = 5;
+RandExp.prototype.max = 1;
 RandExp.mutatePosition = 1;
+RandExp.regexStr = null;
 
-RandExp.prototype.mutateRegex = function() {
-  this.max = this.max * 2
+function cleanArray(arr, deleteValue) {
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i] === deleteValue) {         
+      arr.splice(i, 1);
+      i--;
+    }
+  }
+  return arr;
+}
+
+function removeLastFromObject(obj) {
+  let count = 0
+  for (var key in obj) {
+    if (Array.isArray(obj[key])) {
+      let tmp = obj[key]
+      for (var key2 in tmp) {
+        count++
+      }
+    } else {
+      count++
+    }
+  }
+
+  count++
+  const pos = getRandom(1, count)
+
+  for (var key in obj) {
+    if (Array.isArray(obj[key])) {
+      let tmp = obj[key]
+      for (var key2 in tmp) {
+        count--
+        if (pos === count) {
+          tmp[key2] = undefined
+          cleanArray(tmp, undefined)
+        }
+      }
+    } else {
+      count--
+      if (pos === count) {
+        obj[key] = undefined
+        cleanArray(obj, undefined)
+      }
+    }
+  }
+}
+
+RandExp.prototype.mutateRegex = function(removeItem) {
   if (this.tokens.stack) {
-    this.tokens.stack.splice(this.tokens.stack.length - RandExp.mutatePosition, 1, singleCharToken())
+    if (removeItem) {
+      // this.tokens.stack.splice(this.tokens.stack.length - RandExp.mutatePosition, 1)
+      removeLastFromObject(this.tokens.stack)
+    } else {
+      this.tokens.stack.splice(this.tokens.stack.length - RandExp.mutatePosition, 1, singleCharToken())
+    }
   } else {
-    this.tokens.options.splice(this.tokens.options.length - RandExp.mutatePosition, 1, [singleCharToken()])
+    if (removeItem) {
+      // this.tokens.options.splice(this.tokens.options.length - RandExp.mutatePosition, 1)
+      removeLastFromObject(this.tokens.options)
+    } else {
+      this.tokens.options.splice(this.tokens.options.length - RandExp.mutatePosition, 1, singleCharToken())
+    }
   }
 }
 
 // Generates the random string.
-RandExp.prototype.gen = function(resetMax) {
+RandExp.prototype.gen = function(resetMax, dontMutate, removeItem) {
   if (resetMax) {
-    this.max = 5;
+    this.max = 1;
   }
-  this.mutateRegex()
+
+  this.max = this.max * 2
+  this.tokens = ret(RandExp.regexStr)
+
+  if (!dontMutate) {
+    this.mutateRegex(removeItem)
+  }
+
   return gen.call(this, this.tokens, []);
 };
 
 
 // Enables use of randexp with a shorter call.
-RandExp.randexp = function(regexp, m, resetMax) {
+RandExp.randexp = function(regexp, m, resetMax, dontMutate, removeItem) {
   var randexp;
   if (regexp._randexp === undefined) {
     randexp = new RandExp(regexp, m);
@@ -158,9 +222,9 @@ RandExp.randexp = function(regexp, m, resetMax) {
   } else {
     randexp = regexp._randexp;
   }
-
+  
   checkCustom(randexp, regexp);
-  return randexp.gen(resetMax);
+  return randexp.gen(resetMax, dontMutate, removeItem);
 };
 
 // This enables sugary /regexp/.gen syntax.
